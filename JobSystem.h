@@ -12,6 +12,8 @@ namespace JobSystem
 {
 	// Create the internal resources such as worker threads, etc. Call it once when initializing the application.
 	void Initialize();
+	// Gracefully stop all worker threads
+	void Shutdown();
 
 	// Add a job to execute asynchronously. Any idle thread will execute this job.
 	void Execute(const std::function<void()>& job);

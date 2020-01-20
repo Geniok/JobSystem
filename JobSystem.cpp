@@ -67,7 +67,7 @@ namespace JobSystem
 	std::mutex wakeMutex;    // used in conjunction with the wakeCondition above
 	uint64_t currentLabel = 0;    // tracks the state of execution of the main thread
 	std::atomic<uint64_t> finishedLabel;    // track the state of execution across background worker threads
-
+    bool shuttingDown = false;
 
 	void Initialize()
 	{
@@ -88,7 +88,7 @@ namespace JobSystem
 				std::function<void()> job; // the current job for the thread, it's empty at start.
 
 										   // This is the infinite loop that a worker thread will do 
-				while (true)
+				while (!shuttingDown)
 				{
 					if (jobPool.pop_front(job)) // try to grab a job from the jobPool queue
 					{
@@ -129,6 +129,12 @@ namespace JobSystem
 			worker.detach(); // forget about this thread, let it do it's job in the infinite loop that we created above
 		}
 	}
+    
+	void Shutdown()
+	{
+        shuttingDown = true;
+        wakeCondition.notify_all();
+    }
 
 	// This little helper function will not let the system to be deadlocked while the main thread is waiting for something
 	inline void poll()
